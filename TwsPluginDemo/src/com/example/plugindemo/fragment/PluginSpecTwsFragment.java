@@ -47,12 +47,14 @@ public class PluginSpecTwsFragment extends Fragment implements OnClickListener {
 		View scrollview = pluginInflater.inflate(R.layout.plugin_layout, null);
 
 		mRoot = (ViewGroup) scrollview.findViewById(R.id.content);
-
-		int top = (int) getResources().getDimension(HostProxy.getTwsActionBarHeightID());
-		if (getActivity() instanceof TwsActivity) {
-			top += TwsActivity.getStatusBarHeight();
+		boolean hasOverlayActionbar = getActivity().getWindow().hasFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
+		if (hasOverlayActionbar) {
+			int top = (int) getResources().getDimension(HostProxy.getTwsActionBarHeightID());
+			if (getActivity() instanceof TwsActivity) {
+				top += TwsActivity.getStatusBarHeight();
+			}
+			mRoot.setPadding(0, top, 0, 0);
 		}
-		mRoot.setPadding(0, top, 0, 0);
 
 		initViews();
 

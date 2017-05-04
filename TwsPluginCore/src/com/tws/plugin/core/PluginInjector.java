@@ -38,6 +38,7 @@ import com.tws.plugin.core.android.HackLayoutInflater;
 import com.tws.plugin.core.android.HackLoadedApk;
 import com.tws.plugin.core.android.HackService;
 import com.tws.plugin.core.android.HackWindow;
+import com.tws.plugin.core.android.TwsActivityInterface;
 import com.tws.plugin.core.annotation.PluginContainer;
 import com.tws.plugin.core.compat.CompatForSupportv7_23_2;
 import com.tws.plugin.manager.PluginManagerHelper;
@@ -119,7 +120,7 @@ public class PluginInjector {
 			// 如果是打开插件中的activity,
 			final Intent intent = activity.getIntent();
 			isStubActivity = PluginManagerHelper.isStub(intent.getComponent().getClassName());
-			if(!isStubActivity){
+			if (!isStubActivity) {
 				final String rampActivityName = intent.getStringExtra(PluginIntentResolver.INTENT_EXTRA_BRIDGE_RAMP);
 				isStubActivity = TwsPluginBridgeActivity.class.getName().equals(rampActivityName);
 			}
@@ -133,31 +134,24 @@ public class PluginInjector {
 
 		if (isStubActivity || !TextUtils.isEmpty(pluginId)) {
 
-			// 在activityoncreate之前去完成attachBaseContext的事情
-			Context pluginContext = null;
 			PluginDescriptor pd = null;
+			LoadedPlugin plugin = null;
 
 			if (isStubActivity) {
 				// 是打开插件中的activity
 				pd = PluginManagerHelper.getPluginDescriptorByClassName(activity.getClass().getName());
-				LoadedPlugin plugin = PluginLauncher.instance().startPlugin(pd);
-				pluginContext = PluginLoader.getNewPluginComponentContext(plugin.pluginContext,
-						activity.getBaseContext(), 0);
+				plugin = PluginLauncher.instance().startPlugin(pd);
 				// 获取插件Application对象
 				Application pluginApp = plugin.pluginApplication;
 				// 重设mApplication
 				hackActivity.setApplication(pluginApp);
 			} else {
 				// 是打开的用来显示插件组件的宿主activity
-
 				if (!TextUtils.isEmpty(pluginId)) {
 					// 进入这里表示指定了这个宿主Activity "只显示" 某个插件的组件
 					// 因此直接将这个Activity的Context也替换成插件的Context
 					pd = PluginManagerHelper.getPluginDescriptorByPluginId(pluginId);
-					LoadedPlugin plugin = PluginLauncher.instance().getRunningPlugin(pluginId);
-					pluginContext = PluginLoader.getNewPluginComponentContext(plugin.pluginContext,
-							activity.getBaseContext(), 0);
-
+					plugin = PluginLauncher.instance().getRunningPlugin(pluginId);
 				} else {
 					// do nothing
 					// 进入这里表示这个宿主可能要同时显示来自多个不同插件的组件,
@@ -165,16 +159,20 @@ public class PluginInjector {
 					// 剩下的交给PluginViewFactory去处理
 					return;
 				}
-
 			}
 
 			PluginActivityInfo pluginActivityInfo = pd.getActivityInfos().get(activity.getClass().getName());
 
 			ActivityInfo activityInfo = hackActivity.getActivityInfo();
-			int pluginAppTheme = getPluginTheme(activityInfo, pluginActivityInfo, pd);
+			final boolean isTwsActivity = (activity instanceof TwsActivityInterface);
+			int pluginAppTheme = getPluginTheme(activityInfo, pluginActivityInfo, pd, isTwsActivity);
 
 			TwsLog.d(TAG, "Theme 0x" + Integer.toHexString(pluginAppTheme) + " activity:"
 					+ activity.getClass().getName());
+
+			// 在activityoncreate之前去完成attachBaseContext的事情
+			Context pluginContext = PluginLoader.getNewPluginComponentContext(plugin.pluginContext,
+					activity.getBaseContext(), pluginAppTheme);
 
 			resetActivityContext(pluginContext, activity, pluginAppTheme);
 
@@ -223,6 +221,10 @@ public class PluginInjector {
 
 		// 重设mWindowStyle
 		hackWindow.setWindowStyle(null);
+		// 让WindowStyle构建出来
+		window.getWindowStyle();
+		// 注意这里重设回context,是为了解决MEIZU等奇葩机型对系统statusBar的定制
+		hackWindow.setContext(activity);
 
 		// 重设LayoutInflater
 		TwsLog.d(TAG, activity.getWindow().getClass().getName());
@@ -351,8 +353,12 @@ public class PluginInjector {
 	 * @return
 	 */
 	private static int getPluginTheme(ActivityInfo activityInfo, PluginActivityInfo pluginActivityInfo,
-			PluginDescriptor pd) {
-		int pluginAppTheme = PluginLoader.getApplication().getApplicationInfo().theme;
+			PluginDescriptor pd, boolean isTwsActivity) {
+		int pluginAppTheme = pd.getApplicationTheme();
+		if (isTwsActivity || pluginAppTheme == 0) {
+			pluginAppTheme = PluginLoader.getApplication().getApplicationInfo().theme;
+		}
+
 		if (pluginAppTheme == 0 && pd.isStandalone()) {
 			pluginAppTheme = android.R.style.Theme_Holo_Light;
 		}

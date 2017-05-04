@@ -12,7 +12,6 @@ import android.os.Build;
 import android.os.Bundle;
 
 import com.tws.plugin.content.PluginDescriptor;
-import com.tws.plugin.core.PluginLoader;
 
 /**
  * @author yongchen
@@ -86,7 +85,7 @@ public class PluginManagerProvider extends ContentProvider {
 
     public static Uri buildUri() {
         if (CONTENT_URI == null) {
-            CONTENT_URI = Uri.parse("content://"+ PluginLoader.getApplication().getPackageName() + ".manager" + "/call");
+            CONTENT_URI = Uri.parse("content://com.tencent.tws.pluginhost.manager/call");
         }
         return CONTENT_URI;
     }

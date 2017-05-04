@@ -9,16 +9,22 @@
         android:orientation="vertical" >
 
         <Button
-            android:id="@+id/test_base"
+            android:id="@+id/test_plugincore"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="点击进入测试框架基础能力" />
+            android:text="框架基础能力" />
 
         <Button
             android:id="@+id/test_ShareWidget"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="点击进入测试共享控件" />
+            android:text="共享控件" />
+
+        <Button
+            android:id="@+id/test_actionbar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ActionBar" />
     </LinearLayout>
 
 </ScrollView>

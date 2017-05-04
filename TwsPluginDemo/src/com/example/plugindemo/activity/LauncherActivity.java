@@ -18,6 +18,9 @@ import android.view.Menu;
 import android.view.View;
 
 import com.example.plugindemo.R;
+import com.example.plugindemo.activity.actionbar.ActionBarSamples;
+import com.example.plugindemo.activity.category.PluginCoreSamples;
+import com.example.plugindemo.activity.category.ShareWidgetSamples;
 
 public class LauncherActivity extends TwsActivity implements View.OnClickListener {
 
@@ -58,27 +61,37 @@ public class LauncherActivity extends TwsActivity implements View.OnClickListene
 					| ActionBar.DISPLAY_SHOW_TITLE | ActionBar.DISPLAY_SHOW_CUSTOM);
 		}
 
-		findViewById(R.id.test_base).setOnClickListener(this);
+		findViewById(R.id.test_plugincore).setOnClickListener(this);
 		findViewById(R.id.test_ShareWidget).setOnClickListener(this);
+		findViewById(R.id.test_actionbar).setOnClickListener(this);
 	}
 
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
-		case R.id.test_base:
-			testBase();
+		case R.id.test_plugincore:
+			testPluginCore();
 			break;
 		case R.id.test_ShareWidget:
 			testShareWidget();
+			break;
+		case R.id.test_actionbar:
+			testActionBar();
 			break;
 		default:
 			break;
 		}
 	}
 
-	private void testBase() {
+	private void testActionBar() {
 		Intent intent = new Intent();
-		intent.setClassName(this, PluginCoreBaseActivity.class.getName());
+		intent.setClassName(this, ActionBarSamples.class.getName());
+		startActivity(intent);
+	}
+
+	private void testPluginCore() {
+		Intent intent = new Intent();
+		intent.setClassName(this, PluginCoreSamples.class.getName());
 		startActivity(intent);
 	}
 
@@ -92,7 +105,7 @@ public class LauncherActivity extends TwsActivity implements View.OnClickListene
 	private void testShareWidget() {
 		// 利用className打开共享控件的测试activity
 		Intent intent = new Intent();
-		intent.setClassName(this, ShareWidgetAcitivity.class.getName());
+		intent.setClassName(this, ShareWidgetSamples.class.getName());
 		startActivity(intent);
 	}
 
